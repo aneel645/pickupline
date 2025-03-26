@@ -24,7 +24,7 @@ export default function RootLayout() {
       console.error(error);
       throw error;
     }
-  }, [error]);
+  }, [loaded]);
 
   useEffect(() => {
     if (loaded) {
@@ -47,7 +47,14 @@ function RootLayoutNav() {
   return (
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+      <Stack.Screen 
+        name="category/[id]" 
+        options={{ 
+          headerShown: true,
+          headerBackTitle: "Back",
+        }} 
+      />
+      <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
     </Stack>
   );
 }
