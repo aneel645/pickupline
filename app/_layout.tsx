@@ -2,10 +2,12 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
-import { Platform } from "react-native";
+import { useEffect, useState } from "react";
+import { Platform, View } from "react-native";
 import { ErrorBoundary } from "./error-boundary";
 import React from "react";
+import { Onboarding, checkOnboardingStatus } from "@/components/Onboarding";
+import { colors } from "@/constants/colors";
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
@@ -45,17 +47,45 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
+  const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    // Check if user has completed onboarding
+    const checkOnboarding = async () => {
+      const hasCompletedOnboarding = await checkOnboardingStatus();
+      setShowOnboarding(!hasCompletedOnboarding);
+    };
+
+    checkOnboarding();
+  }, []);
+
+  // Handle onboarding completion
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+  };
+
+  // Show loading state while checking onboarding status
+  if (showOnboarding === null) {
+    return <View style={{ flex: 1, backgroundColor: colors.background }} />;
+  }
+
+  // Show onboarding if needed
+  if (showOnboarding) {
+    return <Onboarding onComplete={handleOnboardingComplete} />;
+  }
+
+  // Show main app if onboarding is complete
   return (
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen 
-        name="category/[id]" 
-        options={{ 
+      <Stack.Screen
+        name="category/[id]"
+        options={{
           headerShown: true,
           headerBackTitle: "Back",
-        }} 
+        }}
       />
-      <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="modal" options={{ presentation: "modal" }} />
     </Stack>
   );
 }
