@@ -1,44 +1,79 @@
-import React from 'react';
-import { StyleSheet, Text, View, ScrollView, SafeAreaView } from 'react-native';
-import { Heart } from 'lucide-react-native';
-import { pickupLines, categories } from '@/mocks/pickup-lines';
-import { colors } from '@/constants/colors';
-import { PickupLineCard } from '@/components/PickupLineCard';
-import { EmptyState } from '@/components/EmptyState';
-import { usePickupStore } from '@/store/pickup-store';
+import React from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  SafeAreaView,
+  Pressable,
+  Alert,
+} from "react-native";
+import { Heart, Trash2 } from "lucide-react-native";
+import { pickupLines, categories } from "@/mocks/pickup-lines";
+import { colors } from "@/constants/colors";
+import { PickupLineCard } from "@/components/PickupLineCard";
+import { EmptyState } from "@/components/EmptyState";
+import { usePickupStore } from "@/store/pickup-store";
 
 export default function FavoritesScreen() {
-  const { favorites } = usePickupStore();
-  
-  const favoriteLines = pickupLines.filter(line => 
+  const { favorites, clearAllFavorites } = usePickupStore();
+
+  const favoriteLines = pickupLines.filter((line) =>
     favorites.includes(line.id)
   );
 
   const getCategoryNameById = (categoryId: string) => {
-    const category = categories.find(cat => cat.id === categoryId);
-    return category ? category.name : '';
+    const category = categories.find((cat) => cat.id === categoryId);
+    return category ? category.name : "";
+  };
+
+  const handleClearAllFavorites = () => {
+    Alert.alert(
+      "Clear All Favorites",
+      "Are you sure you want to remove all favorites?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Clear All",
+          onPress: () => clearAllFavorites(),
+          style: "destructive",
+        },
+      ]
+    );
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
         {favoriteLines.length > 0 ? (
           <>
-            <Text style={styles.title}>Your Favorites</Text>
-            <Text style={styles.subtitle}>
-              {favoriteLines.length} {favoriteLines.length === 1 ? 'line' : 'lines'} saved
-            </Text>
-            
-            {favoriteLines.map(line => (
-              <PickupLineCard 
-                key={line.id} 
-                line={line} 
-                showCategory 
-                categoryName={getCategoryNameById(line.categoryId)} 
+            <View style={styles.headerContainer}>
+              <View>
+                <Text style={styles.title}>Your Favorites</Text>
+                <Text style={styles.subtitle}>
+                  {favoriteLines.length}{" "}
+                  {favoriteLines.length === 1 ? "line" : "lines"} saved
+                </Text>
+              </View>
+              <Pressable
+                style={styles.clearButton}
+                onPress={handleClearAllFavorites}
+              >
+                <Trash2 size={18} color={colors.error} />
+                <Text style={styles.clearButtonText}>Clear All</Text>
+              </Pressable>
+            </View>
+
+            {favoriteLines.map((line) => (
+              <PickupLineCard
+                key={line.id}
+                line={line}
+                showCategory
+                categoryName={getCategoryNameById(line.categoryId)}
               />
             ))}
           </>
@@ -67,15 +102,34 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
     flexGrow: 1,
   },
+  headerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.text,
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 16,
     color: colors.textSecondary,
-    marginBottom: 20,
+  },
+  clearButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 107, 107, 0.1)",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  clearButtonText: {
+    color: colors.error,
+    fontSize: 14,
+    fontWeight: "600",
+    marginLeft: 6,
   },
 });

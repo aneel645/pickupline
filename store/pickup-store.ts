@@ -12,17 +12,21 @@ interface AIGeneratedLine {
 }
 
 interface PickupState {
+  setState(arg0: { favorites: never[]; }): unknown;
   favorites: string[];
   recentlyViewed: string[];
   userRatings: Record<string, number>;
   aiGeneratedLines: AIGeneratedLine[];
   addFavorite: (id: string) => void;
   removeFavorite: (id: string) => void;
+  clearAllFavorites: () => void;
   isFavorite: (id: string) => boolean;
   addRecentlyViewed: (id: string) => void;
   ratePickupLine: (id: string, rating: number) => void;
   getUserRating: (id: string) => number | undefined;
   saveAIGeneratedLine: (text: string, categoryId: string, tone: string) => string;
+  removeAIGeneratedLine: (id: string) => void;
+  clearAllAIGeneratedLines: () => void;
   getAIGeneratedLines: () => AIGeneratedLine[];
   getAIGeneratedLineById: (id: string) => AIGeneratedLine | undefined;
 }
@@ -34,6 +38,8 @@ export const usePickupStore = create<PickupState>()(
       recentlyViewed: [],
       userRatings: {},
       aiGeneratedLines: [],
+
+      setState: (state) => set(state),
 
       addFavorite: (id: string) => {
         set((state) => ({
@@ -84,11 +90,11 @@ export const usePickupStore = create<PickupState>()(
           tone,
           createdAt: new Date().toISOString(),
         };
-        
+
         set((state) => ({
           aiGeneratedLines: [newLine, ...state.aiGeneratedLines]
         }));
-        
+
         return id;
       },
 
@@ -98,6 +104,24 @@ export const usePickupStore = create<PickupState>()(
 
       getAIGeneratedLineById: (id: string) => {
         return get().aiGeneratedLines.find(line => line.id === id);
+      },
+
+      clearAllFavorites: () => {
+        set(() => ({
+          favorites: []
+        }));
+      },
+
+      removeAIGeneratedLine: (id: string) => {
+        set((state) => ({
+          aiGeneratedLines: state.aiGeneratedLines.filter(line => line.id !== id)
+        }));
+      },
+
+      clearAllAIGeneratedLines: () => {
+        set(() => ({
+          aiGeneratedLines: []
+        }));
       },
     }),
     {

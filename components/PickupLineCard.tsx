@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, Pressable, Alert, Platform } from 'react-native';
-import { Heart, Copy, Star } from 'lucide-react-native';
-import { PickupLine } from '@/mocks/pickup-lines';
-import { usePickupStore } from '@/store/pickup-store';
-import { colors } from '@/constants/colors';
+import React, { useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Pressable,
+  Alert,
+  Platform,
+} from "react-native";
+import * as Clipboard from "expo-clipboard";
+import { Heart, Copy, Star } from "lucide-react-native";
+import { PickupLine } from "@/mocks/pickup-lines";
+import { usePickupStore } from "@/store/pickup-store";
+import { colors } from "@/constants/colors";
 
 type PickupLineCardProps = {
   line: PickupLine;
@@ -11,8 +19,18 @@ type PickupLineCardProps = {
   categoryName?: string;
 };
 
-export const PickupLineCard = ({ line, showCategory = false, categoryName }: PickupLineCardProps) => {
-  const { isFavorite, addFavorite, removeFavorite, getUserRating, ratePickupLine } = usePickupStore();
+export const PickupLineCard = ({
+  line,
+  showCategory = false,
+  categoryName,
+}: PickupLineCardProps) => {
+  const {
+    isFavorite,
+    addFavorite,
+    removeFavorite,
+    getUserRating,
+    ratePickupLine,
+  } = usePickupStore();
   const [copied, setCopied] = useState(false);
   const favorite = isFavorite(line.id);
   const userRating = getUserRating(line.id);
@@ -20,18 +38,21 @@ export const PickupLineCard = ({ line, showCategory = false, categoryName }: Pic
   const copyToClipboard = async () => {
     try {
       // Use navigator.clipboard for web
-      if (Platform.OS === 'web') {
+      if (Platform.OS === "web") {
         await navigator.clipboard.writeText(line.text);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } else {
-        // For native platforms, we'll just show an alert since we can't use expo-clipboard
-        Alert.alert('Copy to clipboard', 'This would copy the text in a real app');
+        // For native platforms, use expo-clipboard
+        await Clipboard.setStringAsync(line.text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+        Alert.alert("Copied", "Text copied to clipboard");
       }
     } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
-      if (Platform.OS !== 'web') {
-        Alert.alert('Error', 'Failed to copy to clipboard');
+      console.error("Failed to copy to clipboard:", error);
+      if (Platform.OS !== "web") {
+        Alert.alert("Error", "Failed to copy to clipboard");
       }
     }
   };
@@ -51,41 +72,52 @@ export const PickupLineCard = ({ line, showCategory = false, categoryName }: Pic
   return (
     <View style={styles.card}>
       <Text style={styles.lineText}>{line.text}</Text>
-      
+
       {showCategory && categoryName && (
         <View style={styles.categoryContainer}>
           <Text style={styles.categoryText}>{categoryName}</Text>
         </View>
       )}
-      
+
       <View style={styles.footer}>
         <View style={styles.ratingContainer}>
           {[1, 2, 3, 4, 5].map((star) => (
-            <Pressable 
-              key={star} 
+            <Pressable
+              key={star}
               onPress={() => handleRate(star)}
               style={styles.starButton}
             >
               <Star
                 size={18}
-                color={userRating && star <= userRating ? colors.warning : colors.textLight}
-                fill={userRating && star <= userRating ? colors.warning : 'transparent'}
+                color={
+                  userRating && star <= userRating
+                    ? colors.warning
+                    : colors.textLight
+                }
+                fill={
+                  userRating && star <= userRating
+                    ? colors.warning
+                    : "transparent"
+                }
               />
             </Pressable>
           ))}
         </View>
-        
+
         <View style={styles.actions}>
           <Pressable onPress={toggleFavorite} style={styles.actionButton}>
             <Heart
               size={22}
               color={favorite ? colors.favorite : colors.textLight}
-              fill={favorite ? colors.favorite : 'transparent'}
+              fill={favorite ? colors.favorite : "transparent"}
             />
           </Pressable>
-          
+
           <Pressable onPress={copyToClipboard} style={styles.actionButton}>
-            <Copy size={22} color={copied ? colors.success : colors.textLight} />
+            <Copy
+              size={22}
+              color={copied ? colors.success : colors.textLight}
+            />
           </Pressable>
         </View>
       </View>
@@ -112,8 +144,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   categoryContainer: {
-    backgroundColor: colors.primary + '20', // 20% opacity
-    alignSelf: 'flex-start',
+    backgroundColor: colors.primary + "20", // 20% opacity
+    alignSelf: "flex-start",
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
@@ -122,22 +154,22 @@ const styles = StyleSheet.create({
   categoryText: {
     color: colors.primary,
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   ratingContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   starButton: {
     padding: 4,
     marginRight: 2,
   },
   actions: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   actionButton: {
     padding: 8,
