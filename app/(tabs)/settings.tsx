@@ -129,12 +129,12 @@ export default function SettingsScreen() {
   const showAbout = () => {
     if (Platform.OS === "web") {
       alert(
-        "Pick-up Line App\nVersion 1.0.0\n\nA modern app for finding the perfect pick-up line."
+        "Pick-up Line App\nVersion 1.0.0\n\nA modern app for finding the perfect pick-up line using Artificial Intelligence."
       );
     } else {
       Alert.alert(
         "About",
-        "Pick-up Line App\nVersion 1.0.0\n\nA modern app for finding the perfect pick-up line."
+        "Pick-up Line App\nVersion 1.0.0\n\nA modern app for finding the perfect pick-up line using Artificial Intelligence."
       );
     }
   };

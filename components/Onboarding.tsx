@@ -198,11 +198,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingTop: Platform.OS === "android" ? RNStatusBar.currentHeight : 0,
+    paddingTop: Platform.OS === "android" ? RNStatusBar.currentHeight ?? 0 : 0,
   },
   skipContainer: {
     position: "absolute",
-    top: Platform.OS === "android" ? RNStatusBar.currentHeight + 16 : 16,
+    top: Platform.OS === "android" ? (RNStatusBar.currentHeight ?? 0) + 16 : 16,
     right: 16,
     zIndex: 1,
   },

@@ -12,7 +12,7 @@ interface AIGeneratedLine {
 }
 
 interface PickupState {
-  setState(arg0: { favorites: never[]; }): unknown;
+  setState(arg0: { favorites?: string[]; recentlyViewed?: string[]; userRatings?: Record<string, number>; aiGeneratedLines?: AIGeneratedLine[] }): unknown;
   favorites: string[];
   recentlyViewed: string[];
   userRatings: Record<string, number>;
