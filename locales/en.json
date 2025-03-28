@@ -1,0 +1,47 @@
+{
+    "app": {
+        "name": "Pick Up Lines - AI powered",
+        "description": "Generate creative, funny, and romantic pickup lines with AI. Perfect for dating, breaking the ice, or just having fun!"
+    },
+    "categories": {
+        "funny": "Funny",
+        "romantic": "Romantic",
+        "cheesy": "Cheesy",
+        "nerdy": "Nerdy",
+        "smooth": "Smooth",
+        "cute": "Cute"
+    },
+    "tones": {
+        "flirty": "Flirty",
+        "humorous": "Humorous",
+        "sweet": "Sweet",
+        "clever": "Clever",
+        "bold": "Bold",
+        "casual": "Casual"
+    },
+    "screens": {
+        "generate": "Generate",
+        "browse": "Browse",
+        "favorites": "Favorites",
+        "myCollection": "My Collection",
+        "settings": "Settings"
+    },
+    "actions": {
+        "generate": "Generate",
+        "save": "Save",
+        "share": "Share",
+        "copy": "Copy",
+        "delete": "Delete",
+        "favorite": "Favorite",
+        "unfavorite": "Unfavorite"
+    },
+    "settings": {
+        "theme": "Theme",
+        "language": "Language",
+        "notifications": "Notifications",
+        "privacyPolicy": "Privacy Policy",
+        "rateApp": "Rate App",
+        "shareApp": "Share App",
+        "contactUs": "Contact Us"
+    }
+}

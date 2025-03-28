@@ -1,31 +1,118 @@
 {
   "expo": {
+    "keywords": [
+      "pickup lines",
+      "dating app",
+      "AI pickup lines",
+      "flirting help",
+      "conversation starters",
+      "romantic lines",
+      "funny pickup lines",
+      "chat openers",
+      "ice breakers",
+      "dating tips"
+    ],
+    "categories": [
+      "SOCIAL_NETWORKING",
+      "LIFESTYLE",
+      "EMTERTAINMENT"
+    ],
     "name": "Pick Up Lines - AI powered",
-    "slug": "ai-pickup-lines",
+    "slug": "pick-up-line-ai-powered",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/ic_launcher_foreground.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "description": "Generate creative, funny, and romantic pickup lines with AI. Perfect for dating, breaking the ice, or just having fun!",
+    "primaryColor": "#FF6B6B",
+    "privacy": "public",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "githubUrl": "https://github.com/anil645/pickuplines",
     "splash": {
       "image": "./assets/images/ic_launcher.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.app.aipickuplines",
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "UIBackgroundModes": [],
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to save pickup lines as images."
+      },
+      "appStoreUrl": "https://apps.apple.com/app/id123456789",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "com.app.aipickuplines",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/ic_launcher.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "WRITE_EXTERNAL_STORAGE"
+      ],
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.app.aipickuplines"
     },
-
-    "plugins": ["expo-router"],
+    "web": {
+      "favicon": "./assets/images/ic_launcher-web.png",
+      "name": "Pick Up Lines - AI powered",
+      "shortName": "PickUp Lines",
+      "description": "Generate creative, funny, and romantic pickup lines with AI",
+      "lang": "en",
+      "themeColor": "#FF6B6B",
+      "backgroundColor": "#ffffff",
+      "scope": "/",
+      "startUrl": "/"
+    },
+    "plugins": [
+      "expo-router"
+    ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2282fedd-8379-4009-9608-c24fd9c38a96"
+      },
+      "router": {
+        "origin": false
+      }
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "url": "https://expo.dev/accounts/anil645/projects/pick-up-line-ai-powered"
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "owner": "anil645",
+    "locales": {
+      "en": "./locales/en.json"
+    },
+    "jsEngine": "hermes",
+    "hooks": {
+      "postPublish": []
+    },
+    "notification": {
+      "icon": "./assets/images/ic_launcher.png",
+      "color": "#FF6B6B",
+      "androidMode": "default",
+      "androidCollapsedTitle": "#{unread_s} new pickup lines"
+    },
+    "privacyPolicyUrl": "https://sites.google.com/view/aipickupline/home"
   }
 }
