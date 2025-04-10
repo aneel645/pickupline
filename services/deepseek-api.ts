@@ -1,21 +1,54 @@
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // In a real production app, you would NEVER store API keys directly in your code
 // This is only for demonstration purposes
 const API_KEY = "sk-92794b75267f49d49471fe122475f62f";
 const API_URL = "https://api.deepseek.com/chat/completions";
 
+// Cache keys for storing recent pickup lines
+const RECENT_LINES_KEY_PREFIX = 'recent_pickup_lines_';
+const MAX_RECENT_LINES = 10;
+
 type Message = {
   role: 'system' | 'user' | 'assistant';
   content: string;
 };
 
+// Function to get recently used pickup lines for a category
+async function getRecentLines(category: string): Promise<string[]> {
+  try {
+    const key = `${RECENT_LINES_KEY_PREFIX}${category}`;
+    const storedLines = await AsyncStorage.getItem(key);
+    return storedLines ? JSON.parse(storedLines) : [];
+  } catch (error) {
+    console.warn('Failed to retrieve recent lines:', error);
+    return [];
+  }
+}
+
+// Function to store a newly generated pickup line
+async function storeRecentLine(category: string, line: string): Promise<void> {
+  try {
+    const key = `${RECENT_LINES_KEY_PREFIX}${category}`;
+    const recentLines = await getRecentLines(category);
+
+    // Add new line to the beginning and keep only the most recent ones
+    const updatedLines = [line, ...recentLines.filter(l => l !== line)]
+      .slice(0, MAX_RECENT_LINES);
+
+    await AsyncStorage.setItem(key, JSON.stringify(updatedLines));
+  } catch (error) {
+    console.warn('Failed to store recent line:', error);
+  }
+}
+
 export async function generatePickupLine(category: string, tone: string): Promise<string> {
   // Don't make real API calls on web for demo purposes
   if (Platform.OS === 'web') {
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     // Return mock responses for web
     const mockResponses: Record<string, string[]> = {
       funny: [
@@ -49,21 +82,27 @@ export async function generatePickupLine(category: string, tone: string): Promis
         "I'd say God bless you, but it looks like he already did."
       ]
     };
-    
+
     // Get random response for the category or default to funny
     const responses = mockResponses[category] || mockResponses.funny;
     return responses[Math.floor(Math.random() * responses.length)];
   }
-  
+
   // For native platforms, make the actual API call
   try {
-    const systemPrompt = `You are an expert at creating ${category} pickup lines. Create a single, original ${tone} pickup line. Keep it concise, creative, and appropriate. Only respond with the pickup line text, nothing else.`;
-    
+    // Get recently used lines to avoid repetition
+    const recentLines = await getRecentLines(category);
+
+    // Concise system prompt to reduce token usage while maintaining quality
+    const systemPrompt = `${tone} ${category} pickup line. Make it unique, creative, and concise (1 sentence).
+    Avoid: ${recentLines.length > 0 ? recentLines.slice(0, 3).join('; ') : 'common clichés'}`;
+
+    // Use a minimal user message to reduce tokens
     const messages: Message[] = [
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: `Create a ${category} pickup line with a ${tone} tone.` }
+      { role: 'user', content: `${category} pickup line, ${tone} tone` }
     ];
-    
+
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
@@ -73,16 +112,23 @@ export async function generatePickupLine(category: string, tone: string): Promis
       body: JSON.stringify({
         model: 'deepseek-chat',
         messages: messages,
+        temperature: 0.9, // Higher temperature for more randomness
+        top_p: 0.9, // Diverse token selection
         stream: false
       })
     });
-    
+
     if (!response.ok) {
       throw new Error(`API request failed with status ${response.status}`);
     }
-    
+
     const data = await response.json();
-    return data.choices[0].message.content.trim();
+    const generatedLine = data.choices[0].message.content.trim();
+
+    // Store the newly generated line in the cache to avoid repetition in future requests
+    await storeRecentLine(category, generatedLine);
+
+    return generatedLine;
   } catch (error) {
     console.error('Error generating pickup line:', error);
     throw error;
