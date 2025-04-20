@@ -1,62 +1,48 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, Text, View, ScrollView, SafeAreaView } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { categories, getLineOfTheDay, getFeaturedLines } from '@/mocks/pickup-lines';
-import { colors } from '@/constants/colors';
-import { FeaturedPickupLine } from '@/components/FeaturedPickupLine';
-import { CategoryCard } from '@/components/CategoryCard';
-import { usePickupStore } from '@/store/pickup-store';
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, View, SafeAreaView } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import {
+  categories,
+  getLineOfTheDay,
+  getFeaturedLines,
+  pickupLines,
+} from "@/mocks/pickup-lines";
+import { colors } from "@/constants/colors";
+import { SwipableCard } from "@/components/SwipableCard";
+import { usePickupStore } from "@/store/pickup-store";
 
 export default function HomeScreen() {
   const lineOfTheDay = getLineOfTheDay();
-  const featuredLines = getFeaturedLines().slice(0, 1);
+  const featuredLines = getFeaturedLines();
   const { addRecentlyViewed } = usePickupStore();
+  const [swipableLines, setSwipableLines] = useState<typeof pickupLines>([]);
 
   useEffect(() => {
     // Add line of the day to recently viewed
     addRecentlyViewed(lineOfTheDay.id);
-  }, []);
 
-  const getCategoryNameById = (categoryId: string) => {
-    const category = categories.find(cat => cat.id === categoryId);
-    return category ? category.name : '';
-  };
+    // Prepare lines for swipable cards
+    // Start with featured lines and line of the day, then add the rest
+    const priorityLines = [...featuredLines, lineOfTheDay];
+    const uniqueIds = new Set(priorityLines.map((line) => line.id));
+
+    const remainingLines = pickupLines.filter(
+      (line) => !uniqueIds.has(line.id)
+    );
+    setSwipableLines([...priorityLines, ...remainingLines]);
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.header}>
-          <Text style={styles.greeting}>Find the perfect</Text>
-          <Text style={styles.title}>Pick-up Line</Text>
-        </View>
+      <View style={styles.header}>
+        {/* <Text style={styles.greeting}>Find the perfect</Text> */}
+        <Text style={styles.title}>Pick-up Line</Text>
+      </View>
 
-        <FeaturedPickupLine 
-          line={lineOfTheDay} 
-          title="Line of the Day" 
-          categoryName={getCategoryNameById(lineOfTheDay.categoryId)}
-        />
-
-        {featuredLines.length > 0 && (
-          <FeaturedPickupLine 
-            line={featuredLines[0]} 
-            title="Featured Line" 
-            categoryName={getCategoryNameById(featuredLines[0].categoryId)}
-          />
-        )}
-
-        <View style={styles.categoriesHeader}>
-          <Text style={styles.sectionTitle}>Categories</Text>
-        </View>
-
-        {categories.map(category => (
-          <CategoryCard key={category.id} category={category} />
-        ))}
-      </ScrollView>
+      <View style={styles.cardContainer}>
+        {swipableLines.length > 0 && <SwipableCard lines={swipableLines} />}
+      </View>
     </SafeAreaView>
   );
 }
@@ -66,15 +52,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  scrollView: {
-    flex: 1,
-  },
-  content: {
-    padding: 20,
-    paddingTop: 16,
-  },
   header: {
-    marginBottom: 24,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    marginBottom: 10,
   },
   greeting: {
     fontSize: 16,
@@ -83,16 +64,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.text,
   },
-  categoriesHeader: {
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.text,
+  cardContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
