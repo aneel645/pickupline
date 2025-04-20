@@ -63,7 +63,7 @@ We may update our privacy policy from time to time. We will notify you of any ch
 
 If you have any questions about this privacy policy or our data practices, please contact us at:
 
-console.anil
+console.anil999@gmail.com
 
 ## Last Updated
 

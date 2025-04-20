@@ -1,7 +1,7 @@
-import React from 'react';
-import { Tabs } from 'expo-router';
-import { Home, Search, Heart, Settings, Sparkles, Database } from 'lucide-react-native';
-import { colors } from '@/constants/colors';
+import React from "react";
+import { Tabs } from "expo-router";
+import { Home, Search, Settings, Sparkles } from "lucide-react-native";
+import { colors } from "@/constants/colors";
 
 export default function TabLayout() {
   return (
@@ -22,7 +22,7 @@ export default function TabLayout() {
           borderBottomWidth: 1,
         },
         headerTitleStyle: {
-          fontWeight: '600',
+          fontWeight: "600",
           color: colors.text,
         },
       }}
@@ -30,43 +30,34 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: "Home",
           tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="browse"
         options={{
-          title: 'Browse',
+          title: "Browse",
           tabBarIcon: ({ color, size }) => <Search size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="generate"
         options={{
-          title: 'Generate',
-          tabBarIcon: ({ color, size }) => <Sparkles size={size} color={color} />,
+          title: "Generate",
+          tabBarIcon: ({ color, size }) => (
+            <Sparkles size={size} color={color} />
+          ),
         }}
       />
-      <Tabs.Screen
-        name="my-collection"
-        options={{
-          title: 'Collection',
-          tabBarIcon: ({ color, size }) => <Database size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="favorites"
-        options={{
-          title: 'Favorites',
-          tabBarIcon: ({ color, size }) => <Heart size={size} color={color} />,
-        }}
-      />
+
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
-          tabBarIcon: ({ color, size }) => <Settings size={size} color={color} />,
+          title: "Settings",
+          tabBarIcon: ({ color, size }) => (
+            <Settings size={size} color={color} />
+          ),
         }}
       />
     </Tabs>

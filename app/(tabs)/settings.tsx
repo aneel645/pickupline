@@ -9,6 +9,7 @@ import {
   Alert,
   Platform,
 } from "react-native";
+import { router } from "expo-router";
 import {
   Trash2,
   Heart,
@@ -21,6 +22,8 @@ import {
 } from "lucide-react-native";
 import { colors } from "@/constants/colors";
 import { usePickupStore } from "@/store/pickup-store";
+import FavoritesScreen from "@/components/favorites";
+import MyCollectionScreen from "@/components/my-collection";
 
 export default function SettingsScreen() {
   const {
@@ -200,6 +203,14 @@ export default function SettingsScreen() {
               <Text style={styles.statLabel}>AI Lines</Text>
             </View>
           </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Your Content</Text>
+
+          <FavoritesScreen />
+
+          <MyCollectionScreen />
         </View>
 
         <View style={styles.section}>

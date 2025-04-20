@@ -1,4 +1,10 @@
-import React, { useRef, useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   StyleSheet,
   View,
@@ -17,6 +23,8 @@ import {
   Star,
   ChevronRight,
   ChevronLeft,
+  ArrowLeft,
+  ArrowRight,
 } from "lucide-react-native";
 import { Pressable } from "react-native";
 import { usePickupStore } from "@/store/pickup-store";
@@ -51,11 +59,14 @@ export const SwipableCard = ({
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [copied, setCopied] = useState(false);
-  const [copyTimeoutId, setCopyTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [copyTimeoutId, setCopyTimeoutId] = useState<NodeJS.Timeout | null>(
+    null
+  );
   const [isAnimating, setIsAnimating] = useState(false); // Track if card is currently animating
-  
+  const [showWebControls, setShowWebControls] = useState(Platform.OS === "web");
+
   const position = useRef(new Animated.ValueXY()).current;
-  
+
   // Memoize interpolated values to prevent recalculation on each render
   const animatedValues = useMemo(() => {
     const rotation = position.x.interpolate({
@@ -79,7 +90,7 @@ export const SwipableCard = ({
       outputRange: [0.95, 1, 0.95],
       extrapolate: "clamp",
     });
-    
+
     return { rotation, opacity, scale };
   }, [position.x]);
 
@@ -94,18 +105,19 @@ export const SwipableCard = ({
 
   // Safely access current and next lines with boundary checks
   // Memoize these values to prevent recalculation on each render
-  const safeCurrentIndex = useMemo(() => 
-    Math.min(Math.max(0, currentIndex), lines.length - 1),
+  const safeCurrentIndex = useMemo(
+    () => Math.min(Math.max(0, currentIndex), lines.length - 1),
     [currentIndex, lines.length]
   );
-  
-  const currentLine = useMemo(() => 
-    lines[safeCurrentIndex],
+
+  const currentLine = useMemo(
+    () => lines[safeCurrentIndex],
     [lines, safeCurrentIndex]
   );
-  
-  const nextLine = useMemo(() => 
-    lines.length > 1 ? lines[(safeCurrentIndex + 1) % lines.length] : null,
+
+  const nextLine = useMemo(
+    () =>
+      lines.length > 1 ? lines[(safeCurrentIndex + 1) % lines.length] : null,
     [lines, safeCurrentIndex]
   );
 
@@ -115,8 +127,8 @@ export const SwipableCard = ({
     return category ? category.name : "";
   }, []);
 
-  const currentCategory = useMemo(() => 
-    getCategoryName(currentLine?.categoryId || ""), 
+  const currentCategory = useMemo(
+    () => getCategoryName(currentLine?.categoryId || ""),
     [currentLine?.categoryId, getCategoryName]
   );
 
@@ -138,7 +150,7 @@ export const SwipableCard = ({
         try {
           // Prevent rapid consecutive swipes
           if (isAnimating) return;
-          
+
           if (gesture.dx > SWIPE_THRESHOLD) {
             swipeRight();
             // Provide haptic feedback on swipe
@@ -178,11 +190,11 @@ export const SwipableCard = ({
     position.setValue({ x: 0, y: 0 });
     setCurrentIndex((prevIndex) => {
       if (lines.length === 0) return 0;
-      
+
       const newIndex = prevIndex + 1 >= lines.length ? 0 : prevIndex + 1;
       return newIndex;
     });
-    
+
     // Use setTimeout to delay adding to recently viewed
     // This prevents the state update during render issue
     const nextIndex = (currentIndex + 1) % lines.length;
@@ -196,10 +208,10 @@ export const SwipableCard = ({
   const swipeLeft = useCallback(() => {
     // Prevent swipe if already animating
     if (isAnimating) return;
-    
+
     // Set animating state to prevent new gestures
     setIsAnimating(true);
-    
+
     // Use timing instead of spring for more controlled animation
     Animated.timing(position, {
       toValue: { x: -width * 1.5, y: 0 },
@@ -217,10 +229,10 @@ export const SwipableCard = ({
   const swipeRight = useCallback(() => {
     // Prevent swipe if already animating
     if (isAnimating) return;
-    
+
     // Set animating state to prevent new gestures
     setIsAnimating(true);
-    
+
     // Use timing instead of spring for more controlled animation
     Animated.timing(position, {
       toValue: { x: width * 1.5, y: 0 },
@@ -243,13 +255,33 @@ export const SwipableCard = ({
         addRecentlyViewed(currentLine.id);
       }, 0);
     }
-    
+
+    // Add keyboard event listeners for web platform
+    if (Platform.OS === "web") {
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "ArrowLeft") {
+          swipeLeft();
+        } else if (event.key === "ArrowRight") {
+          swipeRight();
+        }
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+        if (copyTimeoutId) {
+          clearTimeout(copyTimeoutId);
+        }
+      };
+    }
+
     return () => {
       if (copyTimeoutId) {
         clearTimeout(copyTimeoutId);
       }
     };
-  }, [copyTimeoutId, currentLine, addRecentlyViewed]);
+  }, [copyTimeoutId, currentLine, addRecentlyViewed, swipeLeft, swipeRight]);
 
   const copyToClipboard = useCallback(async () => {
     if (!currentLine) return;
@@ -273,7 +305,7 @@ export const SwipableCard = ({
         setCopied(true);
         const id = setTimeout(() => setCopied(false), 2000);
         setCopyTimeoutId(id);
-        
+
         // Provide feedback to user
         if (Platform.OS !== "web") {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -298,7 +330,7 @@ export const SwipableCard = ({
       } else {
         addFavorite(currentLine.id);
       }
-      
+
       // Provide haptic feedback
       if (Platform.OS !== "web") {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -308,40 +340,46 @@ export const SwipableCard = ({
     }
   }, [currentLine, isFavorite, addFavorite, removeFavorite]);
 
-  const handleRate = useCallback((rating: number) => {
-    if (!currentLine) return;
-    try {
-      ratePickupLine(currentLine.id, rating);
-      
-      // Provide haptic feedback
-      if (Platform.OS !== "web") {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  const handleRate = useCallback(
+    (rating: number) => {
+      if (!currentLine) return;
+      try {
+        ratePickupLine(currentLine.id, rating);
+
+        // Provide haptic feedback
+        if (Platform.OS !== "web") {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
+      } catch (error) {
+        console.error("Error rating pickup line:", error);
       }
-    } catch (error) {
-      console.error("Error rating pickup line:", error);
-    }
-  }, [currentLine, ratePickupLine]);
+    },
+    [currentLine, ratePickupLine]
+  );
 
   // Memoize derived values to prevent recalculation on each render
-  const favorite = useMemo(() => 
-    currentLine ? isFavorite(currentLine.id) : false, 
+  const favorite = useMemo(
+    () => (currentLine ? isFavorite(currentLine.id) : false),
     [currentLine, isFavorite]
   );
-  
-  const userRating = useMemo(() => 
-    currentLine ? getUserRating(currentLine.id) : undefined, 
+
+  const userRating = useMemo(
+    () => (currentLine ? getUserRating(currentLine.id) : undefined),
     [currentLine, getUserRating]
   );
 
-  const cardStyle = useMemo(() => ({
-    transform: [
-      { translateX: position.x },
-      { translateY: position.y },
-      { rotate: animatedValues.rotation },
-      { scale: animatedValues.scale },
-    ],
-    opacity: animatedValues.opacity,
-  }), [position.x, position.y, animatedValues]);
+  const cardStyle = useMemo(
+    () => ({
+      transform: [
+        { translateX: position.x },
+        { translateY: position.y },
+        { rotate: animatedValues.rotation },
+        { scale: animatedValues.scale },
+      ],
+      opacity: animatedValues.opacity,
+    }),
+    [position.x, position.y, animatedValues]
+  );
 
   return (
     <View style={styles.container}>
@@ -412,11 +450,23 @@ export const SwipableCard = ({
             </View>
           </View>
 
-          <View style={styles.swipeHint}>
-            <ChevronLeft size={16} color={colors.textLight} />
-            <Text style={styles.swipeText}>Swipe to see more</Text>
-            <ChevronRight size={16} color={colors.textLight} />
-          </View>
+          {showWebControls ? (
+            <View style={styles.webControls}>
+              <Pressable onPress={swipeLeft} style={styles.webControlButton}>
+                <ArrowLeft size={24} color={colors.primary} />
+              </Pressable>
+              <Text style={styles.swipeText}>Navigate to see more</Text>
+              <Pressable onPress={swipeRight} style={styles.webControlButton}>
+                <ArrowRight size={24} color={colors.primary} />
+              </Pressable>
+            </View>
+          ) : (
+            <View style={styles.swipeHint}>
+              <ChevronLeft size={16} color={colors.textLight} />
+              <Text style={styles.swipeText}>Swipe to see more</Text>
+              <ChevronRight size={16} color={colors.textLight} />
+            </View>
+          )}
         </LinearGradient>
       </Animated.View>
     </View>
@@ -519,6 +569,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
+  },
+  webControls: {
+    position: "absolute",
+    bottom: 20,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 16,
+  },
+  webControlButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primary + "15", // 15% opacity
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 8,
   },
   swipeText: {
     color: colors.textLight,
